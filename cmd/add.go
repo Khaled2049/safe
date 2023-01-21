@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 const (
@@ -23,11 +24,11 @@ var addCmd = &cobra.Command{
 	Long:  `The command adds a password`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Enter yo details bruv")
-		insertPassword()
+		insertDetails()
 	},
 }
 
-func insertPassword() {
+func insertDetails() {
 
 	details := &Details{}
 
@@ -53,13 +54,12 @@ func insertPassword() {
 		return
 	}
 	fmt.Print("Password: ")
-	password, err := reader.ReadString('\n')
-	password = strings.TrimRight(password, "\r\n")
+	password, err := term.ReadPassword(int(os.Stdin.Fd()))
 	if err != nil {
 		fmt.Println("An error occured while reading input. Please try again", err)
 		return
 	}
-	fmt.Print("Note: ")
+	fmt.Print("\nNote: ")
 	note, err := reader.ReadString('\n')
 	note = strings.TrimRight(note, "\r\n")
 	if err != nil {
@@ -70,7 +70,7 @@ func insertPassword() {
 	detail := userDetail{
 		Username: username,
 		Email:    email,
-		Password: password,
+		Password: string(password),
 		Note:     note,
 	}
 	details.add(detail)

@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -39,24 +40,28 @@ func insertPassword() {
 	reader := bufio.NewReader(os.Stdin)
 	// ReadString will block until the delimiter is entered
 	username, err := reader.ReadString('\n')
+	username = strings.TrimRight(username, "\r\n")
 	if err != nil {
 		fmt.Println("An error occured while reading input. Please try again", err)
 		return
 	}
 	fmt.Print("Email: ")
 	email, err := reader.ReadString('\n')
+	email = strings.TrimRight(email, "\r\n")
 	if err != nil {
 		fmt.Println("An error occured while reading input. Please try again", err)
 		return
 	}
 	fmt.Print("Password: ")
 	password, err := reader.ReadString('\n')
+	password = strings.TrimRight(password, "\r\n")
 	if err != nil {
 		fmt.Println("An error occured while reading input. Please try again", err)
 		return
 	}
 	fmt.Print("Note: ")
 	note, err := reader.ReadString('\n')
+	note = strings.TrimRight(note, "\r\n")
 	if err != nil {
 		fmt.Println("An error occured while reading input. Please try again", err)
 		return

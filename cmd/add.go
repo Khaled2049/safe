@@ -22,7 +22,7 @@ var addCmd = &cobra.Command{
 	Short: "Add Password",
 	Long:  `The command adds a password`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Adding Password")
+		fmt.Println("Enter yo details bruv")
 		insertPassword()
 	},
 }

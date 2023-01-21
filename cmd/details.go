@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 )
@@ -17,6 +18,7 @@ type Details []userDetail
 
 func (d *Details) add(detail userDetail) {
 	*d = append(*d, detail)
+	fmt.Println("Added successfully!")
 }
 
 func (d *Details) Delete(index int) error {
@@ -26,6 +28,7 @@ func (d *Details) Delete(index int) error {
 	}
 
 	*d = append(ls[:index-1], ls[index:]...)
+	fmt.Println("Delete successful")
 	return nil
 }
 

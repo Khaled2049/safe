@@ -4,6 +4,7 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 
@@ -34,15 +35,42 @@ func insertPassword() {
 		os.Exit(1)
 	}
 
-	data1 := userDetail{
-		Username: "test",
-		Email:    "1@2.com",
-		Password: "asdf",
-		Note:     "note",
-	}
-	details.add(data1)
-	err := details.Store(data)
+	fmt.Print("Username: ")
+	reader := bufio.NewReader(os.Stdin)
+	// ReadString will block until the delimiter is entered
+	username, err := reader.ReadString('\n')
 	if err != nil {
+		fmt.Println("An error occured while reading input. Please try again", err)
+		return
+	}
+	fmt.Print("Email: ")
+	email, err := reader.ReadString('\n')
+	if err != nil {
+		fmt.Println("An error occured while reading input. Please try again", err)
+		return
+	}
+	fmt.Print("Password: ")
+	password, err := reader.ReadString('\n')
+	if err != nil {
+		fmt.Println("An error occured while reading input. Please try again", err)
+		return
+	}
+	fmt.Print("Note: ")
+	note, err := reader.ReadString('\n')
+	if err != nil {
+		fmt.Println("An error occured while reading input. Please try again", err)
+		return
+	}
+
+	detail := userDetail{
+		Username: username,
+		Email:    email,
+		Password: password,
+		Note:     note,
+	}
+	details.add(detail)
+	e := details.Store(data)
+	if e != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 	}
 }

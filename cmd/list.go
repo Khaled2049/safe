@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/alexeyco/simpletable"
 	"github.com/spf13/cobra"
 )
 
@@ -32,10 +33,38 @@ func list() {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
 	}
+
+	table := simpletable.New()
+
+	table.Header = &simpletable.Header{
+		Cells: []*simpletable.Cell{
+			{Align: simpletable.AlignCenter, Text: gray("#")},
+			{Align: simpletable.AlignCenter, Text: green("Username")},
+			{Align: simpletable.AlignCenter, Text: green("Email")},
+			{Align: simpletable.AlignCenter, Text: green("Password")},
+			{Align: simpletable.AlignCenter, Text: green("Note")},
+		},
+	}
+
+	var cells [][]*simpletable.Cell
 	for i, data := range *details {
 		i++
-		fmt.Printf("%d - %s\n", i, data.Email)
+		cells = append(cells, *&[]*simpletable.Cell{
+			{Text: fmt.Sprintf("%d", i)},
+			{Text: blue(data.Username)},
+			{Text: blue(data.Email)},
+			{Text: red(data.Password)},
+			{Text: blue(data.Note)},
+		})
 	}
+
+	table.Body = &simpletable.Body{Cells: cells}
+	table.Footer = &simpletable.Footer{Cells: []*simpletable.Cell{
+		{Align: simpletable.AlignCenter, Span: 5, Text: "🔒"},
+	}}
+
+	table.SetStyle(simpletable.StyleMarkdown)
+	fmt.Println(table.String())
 }
 
 func init() {

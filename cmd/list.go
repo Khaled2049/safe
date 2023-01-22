@@ -4,6 +4,7 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"encoding/hex"
 	"fmt"
 	"os"
 
@@ -58,13 +59,18 @@ func list() {
 	}
 
 	var cells [][]*simpletable.Cell
+	key := []byte("theultimatesupersecretpasswordis")
+	keyStr := hex.EncodeToString(key)
 	for i, data := range *details {
 		i++
+
+		pwd := decrypt(keyStr, data.Password)
+
 		cells = append(cells, *&[]*simpletable.Cell{
 			{Text: fmt.Sprintf("%d", i)},
 			{Text: blue(data.Username)},
 			{Text: blue(data.Email)},
-			{Text: red(data.Password)},
+			{Text: red(pwd)},
 			{Text: blue(data.Note)},
 		})
 	}

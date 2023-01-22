@@ -22,7 +22,7 @@ var deleteCmd = &cobra.Command{
 	Long:  `This command deletes password at given index`,
 	Run: func(cmd *cobra.Command, args []string) {
 		i, _ := strconv.Atoi(args[0])
-		fmt.Println("delete called", i)
+		fmt.Println("Deleting password")
 		del(i)
 	},
 }

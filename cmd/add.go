@@ -5,6 +5,8 @@ package cmd
 
 import (
 	"bufio"
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"strings"
@@ -59,6 +61,25 @@ func insertDetails() {
 		fmt.Println("An error occured while reading input. Please try again", err)
 		return
 	}
+
+	key := []byte("theultimatesupersecretpasswordis")
+	// key := make([]byte, 64)
+	if _, err := rand.Read(key); err != nil {
+		panic(err.Error())
+	}
+	keyStr := hex.EncodeToString(key) //convert to string for saving
+	fmt.Println("Encrypting.....")
+	// encrypt value to base64
+	hash := encrypt(keyStr, password)
+	// hash := hashAndSalt(password)
+	fmt.Println("hash: ", hash)
+
+	// fmt.Println("Decrypting.....")
+	// // encrypt base64 crypto to original value
+	// text := decrypt(keyStr, hash)
+	// fmt.Println(text)
+
+	// test := comparePasswords(hash, password)
 	fmt.Print("\nNote: ")
 	note, err := reader.ReadString('\n')
 	note = strings.TrimRight(note, "\r\n")
@@ -70,7 +91,7 @@ func insertDetails() {
 	detail := userDetail{
 		Username: username,
 		Email:    email,
-		Password: string(password),
+		Password: hash,
 		Note:     note,
 	}
 	details.add(detail)

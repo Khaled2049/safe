@@ -9,21 +9,32 @@ import (
 
 	"github.com/alexeyco/simpletable"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
+
+var LOGGED_IN bool = false
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Show stored passwords",
+	Long:  `List all passwords after authenticating`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("List")
-		list()
+		user, _ := cmd.Flags().GetString("login")
+		if user != "" {
+			if authenticate(user) {
+				LOGGED_IN = true
+			}
+		} else {
+			fmt.Println("Please Login to view passwords")
+		}
+		if LOGGED_IN {
+			fmt.Println(`
+			
+			`)
+			list()
+		}
+
 	},
 }
 
@@ -67,16 +78,33 @@ func list() {
 	fmt.Println(table.String())
 }
 
+func authenticate(user string) bool {
+	users := &Users{}
+	if err := users.Load(userData); err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+		os.Exit(1)
+	}
+	fmt.Println("Username: ", user)
+	fmt.Print("Password: ")
+	password, err := term.ReadPassword(int(os.Stdin.Fd()))
+	if err != nil {
+		fmt.Println("An error occured while reading input. Please try again", err)
+	}
+
+	for i, data := range *users {
+		i++
+		if data.Username == user {
+			if comparePasswords(data.Password, password) {
+				return true
+			} else {
+				fmt.Println("Incorrect username or password")
+			}
+		}
+	}
+	return false
+}
+
 func init() {
 	rootCmd.AddCommand(listCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// listCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// listCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	listCmd.PersistentFlags().String("login", "", "Authenticate to see passwords")
 }

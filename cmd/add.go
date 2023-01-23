@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"encoding/hex"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -24,8 +25,36 @@ var addCmd = &cobra.Command{
 	Short: "Add Password",
 	Long:  `The command adds a password`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Enter yo details bruv")
-		insertDetails()
+		username, _ := cmd.Flags().GetString("username")
+		password, _ := cmd.Flags().GetString("password")
+		email, _ := cmd.Flags().GetString("email")
+		note, _ := cmd.Flags().GetString("note")
+
+		details := &Details{}
+
+		if err := details.Load(data); err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+			os.Exit(1)
+		}
+
+		if username != "" && password != "" && email != "" && note != "" {
+			key := []byte(getSecret())
+			keyStr := hex.EncodeToString(key)
+			hash := encrypt(keyStr, []byte(password))
+			detail := userDetail{
+				Username: username,
+				Email:    email,
+				Password: hash,
+				Note:     note,
+			}
+			details.add(detail)
+			e := details.Store(data)
+			if e != nil {
+				fmt.Fprintln(os.Stderr, e.Error())
+			}
+		} else {
+			insertDetails()
+		}
 	},
 }
 
@@ -61,13 +90,8 @@ func insertDetails() {
 		return
 	}
 
-	key := []byte("theultimatesupersecretpasswordis")
-	// key := make([]byte, 64)
-	// if _, err := rand.Read(key); err != nil {
-	// 	panic(err.Error())
-	// }
-	keyStr := hex.EncodeToString(key) //convert to string for saving
-	// encrypt value to base64
+	key := []byte(getSecret())
+	keyStr := hex.EncodeToString(key)
 	hash := encrypt(keyStr, password)
 
 	fmt.Print("\nNote: ")
@@ -87,20 +111,24 @@ func insertDetails() {
 	details.add(detail)
 	e := details.Store(data)
 	if e != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
+		fmt.Fprintln(os.Stderr, e.Error())
 	}
+}
+
+func getSecret() string {
+	config, err := LoadConfig(".")
+	if err != nil {
+		log.Fatalf("Can't load environment app.env: %v", err)
+	}
+
+	return config.SecretKey
 }
 
 func init() {
 	rootCmd.AddCommand(addCmd)
+	addCmd.Flags().StringP("username", "u", "", "Add the username")
+	addCmd.Flags().StringP("password", "p", "", "Add the password")
+	addCmd.Flags().StringP("email", "e", "", "Add the email")
+	addCmd.Flags().StringP("note", "n", "", "Add the note")
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// addCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// addCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

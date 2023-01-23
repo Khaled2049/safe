@@ -18,24 +18,22 @@ var LOGGED_IN bool = false
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "Show stored passwords",
-	Long:  `List all passwords after authenticating`,
+	Short: "List passwords after logging in",
+	Long: `Use this command to view the stored passwords
+	Example: safe list -login=username
+	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		user, _ := cmd.Flags().GetString("login")
 		if user != "" {
 			if authenticate(user) {
-				LOGGED_IN = true
+				fmt.Println(`
+				
+				`)
+				list()
 			}
 		} else {
 			fmt.Println("Please Login to view passwords")
 		}
-		if LOGGED_IN {
-			fmt.Println(`
-			
-			`)
-			list()
-		}
-
 	},
 }
 
@@ -59,7 +57,7 @@ func list() {
 	}
 
 	var cells [][]*simpletable.Cell
-	key := []byte("theultimatesupersecretpasswordis")
+	key := []byte(getSecret())
 	keyStr := hex.EncodeToString(key)
 	for i, data := range *details {
 		i++
@@ -77,10 +75,10 @@ func list() {
 
 	table.Body = &simpletable.Body{Cells: cells}
 	table.Footer = &simpletable.Footer{Cells: []*simpletable.Cell{
-		{Align: simpletable.AlignCenter, Span: 5, Text: "🔒"},
+		{Align: simpletable.AlignCenter, Span: 5, Text: "🔒 Password Manager 🚀"},
 	}}
 
-	table.SetStyle(simpletable.StyleMarkdown)
+	table.SetStyle(simpletable.StyleUnicode)
 	fmt.Println(table.String())
 }
 
@@ -102,8 +100,6 @@ func authenticate(user string) bool {
 		if data.Username == user {
 			if comparePasswords(data.Password, password) {
 				return true
-			} else {
-				fmt.Println("Incorrect username or password")
 			}
 		}
 	}
@@ -112,5 +108,7 @@ func authenticate(user string) bool {
 
 func init() {
 	rootCmd.AddCommand(listCmd)
-	listCmd.PersistentFlags().String("login", "", "Authenticate to see passwords")
+	// listCmd.PersistentFlags().String("login", "", "Authenticate to see passwords")
+	listCmd.Flags().StringP("login", "l", "", "Login to view passwords")
+	listCmd.MarkFlagRequired("login")
 }

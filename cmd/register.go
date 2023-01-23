@@ -73,7 +73,7 @@ func (u *Users) Store(filename string) error {
 var registerCmd = &cobra.Command{
 	Use:   "register",
 	Short: "Register as a user",
-	Long:  `This command allows you to register as a user to use the CLI password manager`,
+	Long:  `This command allows you to register as a user and use the password manager`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Registering user")
 		register()

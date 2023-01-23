@@ -21,6 +21,9 @@ using the **safe register** cmd
 ## Examples
 
 **Example**: safe register -u=username -p=password
+
 **Example**: safe add -u=username -p=password -e=1@2.com -n=random text
+
 **Example**: safe list -l=username
+
 **Example**: safe delete 1

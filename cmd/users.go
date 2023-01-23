@@ -8,31 +8,29 @@ import (
 	"os"
 )
 
-type userDetail struct {
+type userModel struct {
 	Username string
-	Email    string
 	Password string
-	Note     string
 }
-type Details []userDetail
+type Users []userModel
 
-func (d *Details) add(detail userDetail) {
-	*d = append(*d, detail)
+func (u *Users) add(info userModel) {
+	*u = append(*u, info)
 	fmt.Println("Added successfully ✅")
 }
 
-func (d *Details) Delete(index int) error {
-	ls := *d
+func (u *Users) Delete(index int) error {
+	ls := *u
 	if index <= 0 || index > len(ls) {
 		return errors.New("Invalid index")
 	}
 
-	*d = append(ls[:index-1], ls[index:]...)
+	*u = append(ls[:index-1], ls[index:]...)
 	fmt.Println("Delete successful")
 	return nil
 }
 
-func (d *Details) Load(filename string) error {
+func (u *Users) Load(filename string) error {
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
@@ -43,15 +41,15 @@ func (d *Details) Load(filename string) error {
 	if len(file) == 0 {
 		return err
 	}
-	err = json.Unmarshal(file, d)
+	err = json.Unmarshal(file, u)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (d *Details) Store(filename string) error {
-	data, err := json.Marshal(d)
+func (u *Users) Store(filename string) error {
+	data, err := json.Marshal(u)
 	if err != nil {
 		return err
 	}

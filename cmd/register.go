@@ -5,10 +5,7 @@ package cmd
 
 import (
 	"bufio"
-	"encoding/json"
-	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -20,69 +17,46 @@ const (
 	userData = "user.json"
 )
 
-type userModel struct {
-	Username string
-	Password string
-}
-type Users []userModel
-
-func (u *Users) add(info userModel) {
-	*u = append(*u, info)
-	fmt.Println("Added successfully!")
-}
-
-func (u *Users) Delete(index int) error {
-	ls := *u
-	if index <= 0 || index > len(ls) {
-		return errors.New("Invalid index")
-	}
-
-	*u = append(ls[:index-1], ls[index:]...)
-	fmt.Println("Delete successful")
-	return nil
-}
-
-func (u *Users) Load(filename string) error {
-	file, err := ioutil.ReadFile(filename)
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return nil
-		}
-		return err
-	}
-	if len(file) == 0 {
-		return err
-	}
-	err = json.Unmarshal(file, u)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (u *Users) Store(filename string) error {
-	data, err := json.Marshal(u)
-	if err != nil {
-		return err
-	}
-
-	return ioutil.WriteFile(filename, data, 0644)
-}
-
 // registerCmd represents the register command
 var registerCmd = &cobra.Command{
 	Use:   "register",
 	Short: "Register as a user",
 	Long:  `This command allows you to register as a user and use the password manager`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Registering user")
-		register()
+		username, _ := cmd.Flags().GetString("username")
+		password, _ := cmd.Flags().GetString("password")
+
+		users := &Users{}
+		if err := users.Load(data); err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+			os.Exit(1)
+		}
+
+		if username != "" && password != "" {
+
+			user := userModel{
+				Username: username,
+				Password: hashAndSalt([]byte(password)),
+			}
+
+			users.add(user)
+			e := users.Store(userData)
+			if e != nil {
+				fmt.Fprintln(os.Stderr, e.Error())
+			}
+
+		} else {
+			fmt.Println("Let's get you registerd fam!")
+			register()
+
+		}
 	},
 }
 
 func register() {
 	users := &Users{}
-	if err := users.Load(data); err != nil {
+
+	if err := users.Load(userData); err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
 	}
@@ -110,21 +84,13 @@ func register() {
 	users.add(user)
 	e := users.Store(userData)
 	if e != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
+		fmt.Fprintln(os.Stderr, e.Error())
 	}
 
 }
 
 func init() {
 	rootCmd.AddCommand(registerCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// registerCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// registerCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	registerCmd.Flags().StringP("username", "u", "", "Enter your username")
+	registerCmd.Flags().StringP("password", "p", "", "Enter your password")
 }
